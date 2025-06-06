@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sorting</title>
+  <style>
+    body {
+      font-family: Noto serif, serif;
+      margin: 50px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    #comparison-container {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 20px;
+    }
+    .choice {
+      width: 48%;
+      border: 2px solid #333;
+      padding: 10px;
+      box-sizing: border-box;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .choice:hover {
+      background-color: #f0f0f0;
+    }
+    .choice h2 {
+      margin-top: 0;
+    }
+    #results-container {
+      width: 100%;
+      max-width: 800px;
+    }
+    #results li {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Quale senti che sia meglio?</h1>
+  <h1></h1>
+  <div id="comparison-container">
+    <div id="choice1" class="choice"></div>
+    <div id="choice2" class="choice"></div>
+  </div>
+  <div id="results-container" style="display: none;">
+    <h2>Sorted Titles</h2>
+    <ul id="results"></ul>
+  </div>
+
+  <script src="data.js"></script>
+  <script>
+    // References to DOM elements
+    const choice1Div = document.getElementById('choice1');
+    const choice2Div = document.getElementById('choice2');
+    const comparisonContainer = document.getElementById('comparison-container');
+    const resultsContainer = document.getElementById('results-container');
+    const resultsList = document.getElementById('results');
+
+    // Display two items for the user to compare
+    function displayComparison(item1, item2) {
+      const text1 = item1.text.replace(/\n/g, '<br>');
+      const text2 = item2.text.replace(/\n/g, '<br>');
+      choice1Div.innerHTML = `<h2>${item1.title}</h2><p>${text1}</p>`;
+      choice2Div.innerHTML = `<h2>${item2.title}</h2><p>${text2}</p>`;
+    }
+
+    // Ask user to choose between two items, returns a Promise that resolves with the chosen item
+    function compareItems(item1, item2) {
+      return new Promise((resolve) => {
+        displayComparison(item1, item2);
+
+        // Set up click handlers
+        const onClick1 = () => { cleanup(); resolve(item1); };
+        const onClick2 = () => { cleanup(); resolve(item2); };
+        function cleanup() {
+          choice1Div.removeEventListener('click', onClick1);
+          choice2Div.removeEventListener('click', onClick2);
+        }
+
+        choice1Div.addEventListener('click', onClick1);
+        choice2Div.addEventListener('click', onClick2);
+      });
+    }
+
+    // Async merge sort that uses user comparisons
+    async function mergeSort(arr) {
+      if (arr.length <= 1) {
+        return arr;
+      }
+      const mid = Math.floor(arr.length / 2);
+      const left = await mergeSort(arr.slice(0, mid));
+      const right = await mergeSort(arr.slice(mid));
+      return await merge(left, right);
+    }
+
+    async function merge(left, right) {
+      const result = [];
+      let i = 0, j = 0;
+      while (i < left.length && j < right.length) {
+        const choice = await compareItems(left[i], right[j]);
+        if (choice === left[i]) {
+          result.push(left[i]);
+          i++;
+        } else {
+          result.push(right[j]);
+          j++;
+        }
+      }
+      return result.concat(left.slice(i)).concat(right.slice(j));
+    }
+
+    // Show results (only titles) and save sorted list to localStorage
+    function showResults(sorted) {
+      // Save sorted list
+      localStorage.setItem('sortedItems', JSON.stringify(sorted));
+
+      // Hide comparison container and show results
+      comparisonContainer.style.display = 'none';
+      sorted.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item.title;
+        resultsList.appendChild(li);
+      });
+      resultsContainer.style.display = 'block';
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      const stored = localStorage.getItem('sortedItems');
+    //   if (stored) {
+    //     // If a sorted list exists, display it directly
+    //     const sorted = await mergeSort([...JSON.parse(stored)]);
+    //     showResults(sorted);
+    //   } else {
+        // Otherwise, start interactive sorting
+        const sorted = await mergeSort([...items]);
+        showResults(sorted);
+    //   }
+    });
+  </script>
+</body>
+</html>
