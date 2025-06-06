@@ -183,7 +183,7 @@ e ci faccia grazia.
 Il Signore rivolga a noi il suo volto  
 e ci conceda pace.` },
     { title: 'Chiediamo la carità (dalla liturgia siriaca)', text: `Dio e Signore dell'universo,
-Regna anche nei noChiediamo la carità (dalla liturgia siriaca)stri cuori.
+Regna anche nei nostri cuori.
 Quando litighiamo, insegnaci a costruire la pace.
 Quando diciamo bugie, insegnaci a volerci bene.
 Quando ci facciamo del male, insegnaci a perdonarci.
